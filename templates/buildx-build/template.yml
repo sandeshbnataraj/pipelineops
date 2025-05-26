@@ -104,4 +104,5 @@ spec:
 
       BUILD_CMD+=" \"$IMAGE_CONTEXT\""
 
-      echo "$BUILD_CMD"   
+      echo "$BUILD_CMD"
+      eval $BUILD_CMD
