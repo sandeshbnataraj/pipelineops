@@ -1,5 +1,11 @@
 spec:
   inputs:
+    job_name:
+      description: "Defines the Gitlab job name"
+      default: buildx-build
+      type: string
+      required: false
+
     job_stage:
       description: "Defines the GitLab job stage (e.g., .pre, build, deploy)."
       default: .pre
@@ -45,7 +51,8 @@ spec:
 
 ---
 
-"$[[ inputs.job_stage ]]":
+"$[[ inputs.job_name ]]":
+  stage: $[[ inputs.job_stage ]]
   image: docker:24.0.7
   services:
     - docker:24.0.7-dind
