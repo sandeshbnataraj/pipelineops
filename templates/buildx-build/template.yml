@@ -93,8 +93,16 @@ spec:
 
     # Build and push the Docker image to the configured registry
     - |
-      docker buildx build \
-        --tag "$IMAGE_NAME:$IMAGE_TAG" \
+      BUILD_CMD="docker buildx build \
+        --tag \"$IMAGE_NAME:$IMAGE_TAG\" \
         --push \
-        -f "$DOCKER_PATH/$DOCKER_FILE" \
-        "$IMAGE_CONTEXT"
+        -f \"$DOCKER_PATH/$DOCKER_FILE\""
+
+      if [[ -n \"$BUILD_TARGET\" ]]; then
+        BUILD_CMD="$BUILD_CMD --target $BUILD_TARGET"
+      fi
+
+      BUILD_CMD="$BUILD_CMD $IMAGE_CONTEXT"
+
+      echo "Running: $BUILD_CMD"
+      eval "$BUILD_CMD"
