@@ -38,7 +38,7 @@ spec:
       description: 'Defines the target in the multistage build'
       type: string
       default: ""
-      
+
     image_name:
       description: "Full name (including registry if needed) of the Docker image to build."
       type: string
@@ -104,4 +104,4 @@ spec:
 
       BUILD_CMD+=" \"$IMAGE_CONTEXT\""
 
-      echo $BUILD_CMD   
+      echo "$BUILD_CMD"   
