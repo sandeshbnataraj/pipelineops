@@ -4,7 +4,6 @@ spec:
       description: "Defines the Gitlab job name"
       default: buildx-build
       type: string
-      required: false
 
     job_stage:
       description: "Defines the GitLab job stage (e.g., .pre, build, deploy)."
