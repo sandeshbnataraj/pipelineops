@@ -1,0 +1,88 @@
+spec:
+  inputs:
+    job_stage:
+      description: "Defines the GitLab job stage (e.g., .pre, build, deploy)."
+      default: .pre
+      type: string
+
+    docker_path:
+      description: "Relative path to the directory containing the Dockerfile."
+      type: string
+
+    docker_file:
+      description: "Name of the Dockerfile if it's not the default 'Dockerfile'."
+      default: Dockerfile
+      type: string
+
+    buildx_context:
+      description: "Name of the Buildx context — defines how Docker communicates with the engine (e.g., local, remote, or custom context)."
+      default: default
+      type: string
+
+    buildx_instance:
+      description: "Name of the isolated Buildx builder instance used for the build process."
+      default: mybuilder
+      type: string
+
+    buildx_driver:
+      description: "Buildx driver to use (e.g., 'docker', 'docker-container', or 'kubernetes')."
+      default: docker-container
+      type: string
+
+    image_name:
+      description: "Full name (including registry if needed) of the Docker image to build."
+      type: string
+
+    image_tag:
+      description: "Tag to apply to the built Docker image (e.g., 'latest', 'v1.0.0')."
+      default: latest
+      type: string
+
+    image_context:
+      description: "Path to the build context directory (the root directory Docker uses to locate the Dockerfile and dependencies)."
+      default: .
+      type: string
+
+---
+
+"$[[ inputs.job_stage ]]":
+  image: docker:24.0.7
+  services:
+    - docker:24.0.7-dind
+  variables:
+    BUILDX_CONTEXT: $[[ inputs.buildx_context ]]
+    BUILDX_INSTANCE_NAME: $[[ inputs.buildx_instance ]]
+    BUILDX_DRIVER: $[[ inputs.buildx_driver ]]
+    IMAGE_NAME: $[[ inputs.image_name ]]
+    IMAGE_TAG: $[[ inputs.image_tag ]]
+    DOCKER_PATH: $[[ inputs.docker_path ]]
+    DOCKER_FILE: $[[ inputs.docker_file ]]
+    IMAGE_CONTEXT: $[[ inputs.image_context ]]
+  script: 
+    - echo " Starting Docker Buildx Image Build Process..."
+
+    # Authenticate to Docker registry using GitLab CI credentials
+    - |
+      echo "$CI_REGISTRY_PASSWORD" | \
+        docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+
+    # Ensure the correct Docker context is selected or create it if missing
+    - |
+      docker context use "$BUILDX_CONTEXT" \
+        || docker context create "$BUILDX_CONTEXT" --docker "host=unix:///var/run/docker.sock"
+
+    # Create a new Buildx builder instance with the specified driver
+    # --use sets it as the current builder; --bootstrap warms up the instance
+    - |
+      docker buildx create --name "$BUILDX_INSTANCE_NAME" \
+        --driver "$BUILDX_DRIVER" \
+        --use \
+        --bootstrap
+
+    # Build and push the Docker image to the configured registry
+    - |
+      docker buildx build \
+        --tag "$IMAGE_NAME:$IMAGE_TAG" \
+        --push \
+        -f "$DOCKER_PATH/$DOCKER_FILE" \
+        "$IMAGE_CONTEXT"
