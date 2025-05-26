@@ -37,7 +37,8 @@ spec:
     build_target:
       description: 'Defines the target in the multistage build'
       type: string
-
+      default: ""
+      
     image_name:
       description: "Full name (including registry if needed) of the Docker image to build."
       type: string
