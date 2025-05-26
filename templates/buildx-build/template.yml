@@ -98,11 +98,13 @@ spec:
         --push \
         -f \"$DOCKER_PATH/$DOCKER_FILE\""
 
-      if [[ -n \"$BUILD_TARGET\" ]]; then
-        BUILD_CMD="$BUILD_CMD --target $BUILD_TARGET"
+      if [[ -n "$BUILD_TARGET" ]]; then
+        BUILD_CMD="$BUILD_CMD --target \"$BUILD_TARGET\""
       fi
 
-      BUILD_CMD="$BUILD_CMD $IMAGE_CONTEXT"
-
+      # This must be added *last* — it's the build context path
+      BUILD_CMD="$BUILD_CMD \"$IMAGE_CONTEXT\""
+      
+      echo "BUILD_TARGET=[$BUILD_TARGET]"
       echo "Running: $BUILD_CMD"
       eval "$BUILD_CMD"
