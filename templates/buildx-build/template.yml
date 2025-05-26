@@ -34,6 +34,10 @@ spec:
       default: docker-container
       type: string
 
+    build_target:
+      description: 'Defines the target in the multistage build'
+      type: string
+
     image_name:
       description: "Full name (including registry if needed) of the Docker image to build."
       type: string
@@ -59,6 +63,7 @@ spec:
     BUILDX_CONTEXT: $[[ inputs.buildx_context ]]
     BUILDX_INSTANCE_NAME: $[[ inputs.buildx_instance ]]
     BUILDX_DRIVER: $[[ inputs.buildx_driver ]]
+    BUILD_TARGET: $[[ inputs.build_target ]]
     IMAGE_NAME: $[[ inputs.image_name ]]
     IMAGE_TAG: $[[ inputs.image_tag ]]
     DOCKER_PATH: $[[ inputs.docker_path ]]
@@ -87,8 +92,15 @@ spec:
 
     # Build and push the Docker image to the configured registry
     - |
-      docker buildx build \
+      BUILD_CMD=docker buildx build \
         --tag "$IMAGE_NAME:$IMAGE_TAG" \
         --push \
         -f "$DOCKER_PATH/$DOCKER_FILE" \
-        "$IMAGE_CONTEXT"
+
+      if [[ -n "$BUILD_TARGET" ]]; then
+        BUILD_CMD+=" --target \"$BUILD_TARGET\""
+      fi
+
+      BUILD_CMD+=" \"$IMAGE_CONTEXT\""
+
+      echo $BUILD_CMD   
