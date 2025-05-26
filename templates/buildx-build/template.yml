@@ -61,6 +61,7 @@ spec:
   services:
     - docker:24.0.7-dind
   variables:
+    #DOCKER_BUILDKIT: 1
     BUILDX_CONTEXT: $[[ inputs.buildx_context ]]
     BUILDX_INSTANCE_NAME: $[[ inputs.buildx_instance ]]
     BUILDX_DRIVER: $[[ inputs.buildx_driver ]]
@@ -98,6 +99,7 @@ spec:
         --push \
         -f \"$DOCKER_PATH/$DOCKER_FILE\""
 
+      echo "BUILD_TARGET=[$BUILD_TARGET]"
       if [[ -n "$BUILD_TARGET" ]]; then
         BUILD_CMD="$BUILD_CMD --target \"$BUILD_TARGET\""
       fi
@@ -105,6 +107,5 @@ spec:
       # This must be added *last* — it's the build context path
       BUILD_CMD="$BUILD_CMD \"$IMAGE_CONTEXT\""
       
-      echo "BUILD_TARGET=[$BUILD_TARGET]"
       echo "Running: $BUILD_CMD"
       eval "$BUILD_CMD"
